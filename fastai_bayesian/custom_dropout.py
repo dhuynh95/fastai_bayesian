@@ -1,12 +1,12 @@
 import torch.nn as nn
 import torch
 from fastai.basic_train import DatasetType
-
+from typing import Callable
 
 class CustomDropout(nn.Module):
     """Custom Dropout module to be used as a baseline for MC Dropout"""
 
-    def __init__(self, p, activate=True):
+    def __init__(self, p:float, activate=True):
         super().__init__()
         self.activate = activate
         self.p = p
@@ -18,7 +18,7 @@ class CustomDropout(nn.Module):
         return f"p={self.p}, activate={self.activate}"
 
 
-def switch_custom_dropout(m, activate=True, verbose=False):
+def switch_custom_dropout(m, activate:bool=True, verbose:bool=False):
     """Turn all Custom Dropouts training mode to true or false according to the variable activate"""
     for c in m.children():
         if isinstance(c, CustomDropout):
@@ -28,7 +28,8 @@ def switch_custom_dropout(m, activate=True, verbose=False):
         else:
             switch_custom_dropout(c, activate=activate)
 
-def convert_layers(model, original, replacement, get_args=None, additional_args={}):
+def convert_layers(model:nn.Module, original:nn.Module, replacement:nn.Module, get_args:Callable=None,
+ additional_args:dict={}):
     """Convert modules of type "original" to "replacement" inside the model
     
     get_args : a function to use on the original module to eventually get its arguements to pass to the new module
