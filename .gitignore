@@ -2,3 +2,6 @@ __pycache__
 .ipynb_checkpoints
 .vscode
 models
+*.csv
+*.jpg
+*.zip
