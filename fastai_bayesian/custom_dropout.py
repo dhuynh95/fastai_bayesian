@@ -4,29 +4,36 @@ from fastai.basic_train import DatasetType
 from typing import Callable
 
 class CustomDropout(nn.Module):
-    """Custom Dropout module to be used as a baseline for MC Dropout"""
+    """Custom Dropout made to constantly keep stochasticity unless manually deactivated"""
 
-    def __init__(self, p:float, activate=True):
+    def __init__(self, dp:float, activate_stochasticity=True):
+        """Initialize the module with a dropout probability and a boolean switch for stochasticty
+
+        Args:
+            activate_stochasticity: A boolean, saying wether or not we use stochasticity
+            dp: The probability to drop a neuron 
+        """
         super().__init__()
-        self.activate = activate
-        self.p = p
+        self.activate_stochasticity = activate_stochasticity
+
+        self.dp = dp
 
     def forward(self, x):
-        return nn.functional.dropout(x, self.p, training=self.training or self.activate)
+        return nn.functional.dropout(x, self.dp, training=self.training or self.activate_stochasticity)
 
     def extra_repr(self):
-        return f"p={self.p}, activate={self.activate}"
+        return f"dp={self.dp}, activate_stochasticity={self.activate_stochasticity}"
 
 
-def switch_custom_dropout(m, activate:bool=True, verbose:bool=False):
-    """Turn all Custom Dropouts training mode to true or false according to the variable activate"""
+def switch_custom_dropout(m, activate_stochasticity:bool=True, verbose:bool=False):
+    """Turn all Custom Dropouts training mode to true or false according to the variable activate_stochasticity"""
     for c in m.children():
         if isinstance(c, CustomDropout):
-            print(f"Current active : {c.activate}")
-            print(f"Switching to : {activate}")
-            c.activate = activate
+            print(f"Current active : {c.activate_stochasticity}")
+            print(f"Switching to : {activate_stochasticity}")
+            c.activate_stochasticity = activate_stochasticity
         else:
-            switch_custom_dropout(c, activate=activate)
+            switch_custom_dropout(c, activate_stochasticity=activate_stochasticity)
 
 def convert_layers(model:nn.Module, original:nn.Module, replacement:nn.Module, get_args:Callable=None,
  additional_args:dict={}):
